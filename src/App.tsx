@@ -1,26 +1,16 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useGetCurrentUserQuery } from './api/account/account.api'
+import { useToken } from './hooks/auth/useToken'
+import { useNavigation } from './hooks/navigation/useNavigation'
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const navigation = useNavigation()
+  const { isChecking } = useToken()
+
+  const { data } = useGetCurrentUserQuery()
+
+  console.log('data', data)
+
+  return <div className='App'>{!isChecking && navigation}</div>
 }
 
-export default App;
+export default App
