@@ -30,6 +30,12 @@ const accountApi = mainApi.injectEndpoints({
     getCurrentUser: build.query<IUser, void>({
       query: () => 'accounts/getCurrentAppUser',
     }),
+    logout: build.mutation<string, void>({
+      query: () => ({
+        url: 'accounts/logout',
+        method: 'POST',
+      }),
+    }),
   }),
 })
 
@@ -37,4 +43,5 @@ export const {
   useLoginWithCodeMutation,
   useGeneratePasswordMutation,
   useGetCurrentUserQuery,
+  useLogoutMutation,
 } = accountApi

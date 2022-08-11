@@ -1,5 +1,7 @@
 import { useGetCurrentUserQuery } from './api/account/account.api'
+import { useUseGetAllDynamicQuery } from './api/global/global.api'
 import { useToken } from './hooks/auth/useToken'
+import { useGlobal } from './hooks/global/useGlobal'
 import { useNavigation } from './hooks/navigation/useNavigation'
 
 function App() {
@@ -7,8 +9,9 @@ function App() {
   const { isChecking } = useToken()
 
   const { data } = useGetCurrentUserQuery()
+  // const { data: global } = useUseGetAllDynamicQuery()
 
-  console.log('data', data)
+  useGlobal()
 
   return <div className='App'>{!isChecking && navigation}</div>
 }

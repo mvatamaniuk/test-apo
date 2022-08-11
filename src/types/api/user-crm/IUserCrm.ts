@@ -1,6 +1,6 @@
 export interface IPatchUserCrmBody {
   path: string
-  value: string
+  value: string | Date | number | null
   id?: string
   operationType: number
   op: string

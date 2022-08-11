@@ -1,9 +1,15 @@
 import { Button, Grid, Typography } from '@mui/material'
 import { FC } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import bgimg from '../../assets/images/bg-image.png'
+import { useAuth } from '../../hooks/auth/useAuth'
 
 export const DashboardWelcome: FC = () => {
+  const { logout } = useAuth()
+
+  const navigate = useNavigate()
+
   return (
     <Grid container>
       <Grid
@@ -23,11 +29,13 @@ export const DashboardWelcome: FC = () => {
       </Grid>
 
       <Grid xs={12} sx={{ textAlign: 'center' }}>
-        <Button variant='contained'>Edit my profile and my worklog</Button>
+        <Button variant='contained' onClick={() => navigate('/dashboard')}>
+          Edit my profile and my worklog
+        </Button>
       </Grid>
 
       <Grid xs={12} sx={{ textAlign: 'center', mt: 3 }}>
-        <Button>Logout</Button>
+        <Button onClick={logout}>Logout</Button>
       </Grid>
     </Grid>
   )

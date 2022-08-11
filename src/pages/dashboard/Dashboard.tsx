@@ -1,4 +1,4 @@
-import { FC, useCallback, useState } from 'react'
+import { ChangeEvent, FC, useCallback, useState } from 'react'
 import {
   Grid,
   TextField,
@@ -8,6 +8,7 @@ import {
   debounce,
   Stack,
   Button,
+  Box,
 } from '@mui/material'
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
 import { TimePicker } from '@mui/x-date-pickers/TimePicker'
@@ -23,26 +24,27 @@ export const Dashboard: FC = () => {
 
   const [startTime, setStartTime] = useState<Date | null>(null)
   const [endTime, setEndTime] = useState<Date | null>(null)
-  const [dateStore, setDateStore] = useState<Array<any>>([])
-
-  // const [updateValue, setUpdateVa]
 
   const { data, isLoading } = useGetCurrentUserQuery()
   const [patchUser] = usePatchUserCrmProfileMutation()
   const { updateWorkLog, workLog } = useWorkLog()
 
-  // const {} = useDebounce()
-
-  const handleChange = (newValue: Date | null) => {
+  const handleChange = async (newValue: Date | null, path: string) => {
     setValue(newValue)
+
+    await patchUser({
+      id: 'd518afb0-77ea-4559-bec2-296a424b30fc',
+      value: newValue,
+      path,
+    })
   }
 
-  const onChange = async (value: string) => {
-    // console.log('API CALL')
+  const onChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const { value, name } = event.target
     await patchUser({
       value,
       id: 'd518afb0-77ea-4559-bec2-296a424b30fc',
-      path: 'firstName',
+      path: name,
       op: '',
       from: '',
       operationType: 0,
@@ -51,49 +53,43 @@ export const Dashboard: FC = () => {
 
   const debounceHandler = useCallback(debounce(onChange, 500), [])
 
-  // const handleStartChangeDate = (newValue: Date | null) => {
-  //   setStartTime(newValue)
-  // }
-
-  // const handleEndChangeDate = (newValue: Date | null) => {
-  //   setEndTime(newValue)
-  // }
-
-  // const handleWorkTimeClick = () => {
-  //   updateWorkLog('monday', startTime!, endTime!)
-  // }
-
   if (isLoading) {
     return <div>loading...</div>
   }
 
   return (
     <>
+      <Box sx={{ mx: 5 }}>
+        <Typography variant='h1'>General</Typography>
+      </Box>
+
       <Grid container sx={{ mx: 5, my: 5 }}>
         <Grid item xs={8}>
-          <Grid container sx={{ bgcolor: '' }}>
-            <Grid item xs={4} sx={{ bgcolor: '' }}>
+          <Grid container>
+            <Grid item xs={4}>
               <TextField
-                onChange={(event) => debounceHandler(event.target.value)}
+                onChange={debounceHandler}
                 variant='standard'
+                name='firstName'
                 label='First name'
                 defaultValue={data?.firstName}
               />
             </Grid>
-            <Grid item xs={4} sx={{ bgcolor: '' }}>
+            <Grid item xs={4}>
               <TextField
-                onChange={(event) => debounceHandler(event.target.value)}
+                onChange={debounceHandler}
                 variant='standard'
+                name='lastName'
                 label='Last name'
                 defaultValue={data?.lastName}
               />
             </Grid>
             <Grid item xs={4}>
               <DesktopDatePicker
-                label='Date desktop'
+                label='Date of birth'
                 inputFormat='MM/dd/yyyy'
                 value={value}
-                onChange={handleChange}
+                onChange={(event) => handleChange(event, 'birthDate')}
                 renderInput={(params) => (
                   <TextField {...params} variant='standard' />
                 )}
@@ -106,22 +102,27 @@ export const Dashboard: FC = () => {
               <TextField
                 variant='standard'
                 label='Email'
+                name='email'
                 defaultValue={data?.email}
-                onChange={(event) => debounceHandler(event.target.value)}
+                onChange={debounceHandler}
               />
             </Grid>
             <Grid item xs={4}>
               <TextField
                 variant='standard'
                 label='Personal email'
+                name='personalEmail'
                 defaultValue={data?.personalEmail}
+                onChange={debounceHandler}
               />
             </Grid>
             <Grid item xs={4}>
               <TextField
                 variant='standard'
                 label='Phone number'
+                name='mobilePhone'
                 defaultValue={data?.mobilePhone}
+                onChange={debounceHandler}
               />
             </Grid>
           </Grid>
@@ -129,12 +130,17 @@ export const Dashboard: FC = () => {
           <Grid container>
             <Grid item xs={4}>
               <DesktopDatePicker
-                label='Date desktop'
+                label='Start Date'
                 inputFormat='MM/dd/yyyy'
                 value={value}
-                onChange={handleChange}
+                onChange={(value) => handleChange(value, 'startDate')}
                 renderInput={(params) => (
-                  <TextField {...params} variant='standard' />
+                  <TextField
+                    {...params}
+                    variant='standard'
+                    name='dateDesktop'
+                    onChange={debounceHandler}
+                  />
                 )}
               />
             </Grid>
@@ -143,11 +149,18 @@ export const Dashboard: FC = () => {
                 variant='standard'
                 label='Absences'
                 defaultValue={data?.absences}
+                onChange={debounceHandler}
               />
             </Grid>
             <Grid item xs={4}>
               <FormControlLabel
-                control={<Checkbox defaultChecked />}
+                control={
+                  <Checkbox
+                    defaultChecked
+                    name='isCoreTeamMember'
+                    onChange={debounceHandler}
+                  />
+                }
                 label='Core team member'
                 checked={data?.isCoreTeamMember}
               />
@@ -160,6 +173,7 @@ export const Dashboard: FC = () => {
               variant='standard'
               label='Slack'
               defaultValue={data?.slackUserName}
+              onChange={debounceHandler}
             />
           </Grid>
           <Grid item xs={12}>
@@ -167,10 +181,15 @@ export const Dashboard: FC = () => {
               variant='standard'
               label='Github'
               defaultValue={data?.gitHubUserName}
+              onChange={debounceHandler}
             />
           </Grid>
         </Grid>
       </Grid>
+
+      <Box sx={{ mx: 5 }}>
+        <Typography variant='h1'>Work Logs</Typography>
+      </Box>
 
       <Grid container sx={{ mt: 15, mx: 5 }}>
         {workLog.map((_worklog) => {

@@ -4,13 +4,15 @@ import { useNavigate } from 'react-router-dom'
 import {
   useGeneratePasswordMutation,
   useLoginWithCodeMutation,
+  useLogoutMutation,
 } from '../../api/account/account.api'
 import {
   ACCESS_TOKEN_STORAGE,
   REFRESH_TOKEN_STORAGE,
 } from '../../constants/storage/storage.constants'
 import { setAccessToken } from '../../redux/auth/auth.slice'
-import { useAppDispatch } from '../redux/useRedux'
+import { selectGlobal } from '../../redux/global/global.selectors'
+import { useAppDispatch, useAppSelector } from '../redux/useRedux'
 
 interface FormElements extends HTMLFormControlsCollection {
   email: HTMLInputElement
@@ -23,6 +25,9 @@ interface SignInForm extends HTMLFormElement {
 export const useAuth = () => {
   const [loginWithCodeMutation] = useLoginWithCodeMutation()
   const [generatePasswordMutation] = useGeneratePasswordMutation()
+  const [logoutMutation] = useLogoutMutation()
+
+  const { defaultLanguageID } = useAppSelector(selectGlobal)
 
   const [loginError, setLoginError] = useState(false)
   const [codeError, setCodeError] = useState(false)
@@ -47,7 +52,7 @@ export const useAuth = () => {
       const result = await loginWithCodeMutation({
         email: 'demo6@demo.com',
         code: verificationCode,
-        languageId: '2121',
+        languageId: defaultLanguageID,
       }).unwrap()
 
       const {
@@ -59,7 +64,7 @@ export const useAuth = () => {
 
       dispatch(setAccessToken({ token, refreshToken }))
 
-      navigate('/')
+      navigate('/dashboard/welcome')
 
       setCodeError(false)
     } catch (error) {
@@ -78,7 +83,7 @@ export const useAuth = () => {
 
         const result = await generatePasswordMutation({
           email: email.value,
-          languageId: 'b73471f8-a753-4d71-8d5b-2ca27a10779b',
+          languageId: defaultLanguageID,
         }).unwrap()
 
         setLoginError(false)
@@ -91,9 +96,21 @@ export const useAuth = () => {
     []
   )
 
+  const logout = useCallback(async () => {
+    try {
+      await logoutMutation()
+
+      localStorage.removeItem(ACCESS_TOKEN_STORAGE)
+      localStorage.removeItem(REFRESH_TOKEN_STORAGE)
+
+      dispatch(setAccessToken({ refreshToken: '', token: '' }))
+    } catch (error) {}
+  }, [])
+
   return {
     onLoginWithEmailSubmit,
     onSendCodeWithEmailSubmit,
+    logout,
     loginError,
     codeError,
   }
